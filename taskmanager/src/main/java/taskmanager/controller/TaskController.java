@@ -4,27 +4,38 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import taskmanager.model.Task;
 import taskmanager.repository.TaskRepository;
-
 import java.util.List;
 
-@RestController // මේකෙන් කියන්නේ මේක API එකක් කියලා
-@RequestMapping("/tasks") // අපේ API එකට එන පාර (URL එක) මේකයි
-@CrossOrigin // පස්සේ කාලෙක React වලට මේකත් එක්ක කතා කරන්න මේක අනිවාර්යයි
+@RestController
+@CrossOrigin(origins = "*")
 public class TaskController {
 
     @Autowired
-    private TaskRepository taskRepository; // අපි අර කලින් හදපු සහයකයාව මෙතනට ගෙන්න ගන්නවා
+    private TaskRepository taskRepository;
 
-    // 1. අලුත් Task එකක් සේව් කරන්න (Create - POST)
-    @PostMapping
-    public Task addTask(@RequestBody Task task) {
-        return taskRepository.save(task); // සහයකයා ලවා දත්තය සේව් කරවනවා
+    @PostMapping("/tasks")
+    public Task createTask(@RequestBody Task task) {
+        return taskRepository.save(task);
     }
 
-    // 2. තියෙන Tasks ඔක්කොම බලන්න (Read - GET)
-    @GetMapping
+    @GetMapping("/tasks")
     public List<Task> getAllTasks() {
-        return taskRepository.findAll(); // සහයකයා ලවා දත්ත ඔක්කොම අරන් එනවා
+        return taskRepository.findAll();
+    }
+
+    // මෙතන Long වෙනුවට Integer කියලා වෙනස් කළා
+    @PutMapping("/tasks/{id}")
+    public Task updateTask(@PathVariable Integer id, @RequestBody Task taskDetails) {
+        Task task = taskRepository.findById(id).orElseThrow();
+        task.setTaskName(taskDetails.getTaskName());
+        task.setCompleted(taskDetails.isCompleted());
+        return taskRepository.save(task);
+    }
+
+    // මෙතනත් Long වෙනුවට Integer කියලා වෙනස් කළා
+    @DeleteMapping("/tasks/{id}")
+    public String deleteTask(@PathVariable Integer id) {
+        taskRepository.deleteById(id);
+        return "Task deleted";
     }
 }
-
